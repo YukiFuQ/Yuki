@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+</head>
+
+<body>
+<script>
+
+    $(document).ready(function(){
+        var username;
+        $("#login").click(function () {
+            username=$("#name").val();
+            if(!username){
+                alert("name 不能为空")
+                return false;
+            }
+            $.get("/login?name="+username,function () {
+                $("#log").hide();
+                $("#logname").text(username);
+                $("#main").show();
+            })
+        });
+        $("#sendBtn").click(function () {
+            var msg=$("#message").val();
+            if(!msg){
+                alert("消息不能为空")
+                return false;
+            }
+            if(msg.length>140){
+                alert("消息不能超过140个字符")
+                return false;
+            }
+            $.post("/sendMsg?username="+username+"&msg="+msg,function (data) {
+                $("#message").val("");
+                $("#wall").empty();
+                for(var i=0;i<data.length;i++){
+                    $("#wall").append(
+                        "<div style=\"height:30px;display: flex;border:1px solid #000\">" +
+                        "<div style=\"width:70%;height:30px;background-color:#FFF8DC;\">"+
+                        "<text id =\"msgbody\" >"+data[i].body+"</text>"+
+                        "</div><div style=\"width:30%;background-color:#FFF8DC;\">" +
+                        "<text style=\"font-size:8px;\"id =\"time\">"+data[i].time+"</text>"
+                    )
+                }
+            });
+        });
+        $("#subBtn").click(function () {
+            var subname = $("#followUser").val();
+            if(!subname){
+                alert("被关注人为空");
+                return false;
+            }
+
+            $.post("/subscibe?username="+username+"&subname="+subname,function (data) {
+                $("#followUser").val("");
+                $("#followList").empty();
+                for(var i=0;i<data.length;i++){
+                    $("#followList").append(
+                        " <option value =\""+data[i]+"\">"+data[i]+"</option>"
+                    )
+                }
+                var followname = $("#followList").val();
+                $.post("/getWall?username="+followname,function (data) {
+                    $("#followMessage").empty();
+                    for(var i=0;i<data.length;i++){
+                        $("#followMessage").append(
+                            "<div style=\"height:30px;display: flex;border:1px solid #000\">" +
+                            "<div style=\"width:70%;height:30px;background-color:#FFF8DC;\">"+
+                            "<text id =\"msgbody\" >"+data[i].body+"</text>"+
+                            "</div><div style=\"width:30%;background-color:#FFF8DC;\">" +
+                            "<text style=\"font-size:8px;\"id =\"time\">"+data[i].time+"</text>"
+                        )
+                    }
+                })
+            })
+        })
+
+        $("#followList").change(function () {
+            var followname = $("#followList").val();
+            $.post("/getWall?username="+followname,function (data) {
+                $("#followMessage").empty();
+                for(var i=0;i<data.length;i++){
+                    $("#followMessage").append(
+                        "<div style=\"height:30px;display: flex;border:1px solid #000\">" +
+                        "<div style=\"width:70%;height:30px;background-color:#FFF8DC;\">"+
+                        "<text id =\"msgbody\" >"+data[i].body+"</text>"+
+                        "</div><div style=\"width:30%;background-color:#FFF8DC;\">" +
+                        "<text style=\"font-size:8px;\"id =\"time\">"+data[i].time+"</text>"
+                    )
+                }
+            })
+        })
+
+    });
+
+</script>
+<style>
+    #log{
+        width: 300px;
+        height: 80px;
+        margin: auto;
+        position: absolute;
+        background-color:#FFE1FF;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+    #logText{
+
+        position: absolute;
+        top: 10px;
+        left: 10px;
+    }
+    #name{
+        width:190px;
+        position: absolute;
+        top: 10px;
+        right:10px;
+    }
+    #login{
+        width:280px;
+        position: absolute;
+        top: 40px;
+        right:10px;
+
+    }
+    #main{
+        width: 500px;
+        height: 500px;
+        margin: auto;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color:#FFE1FF;
+        display: none;
+    }
+    #loglable{
+        margin:auto;
+        position: absolute;
+        top: 0;
+        left: 10px;
+    }
+    #sendlable{
+        position: absolute;
+        top: 30px;
+    }
+    #message{
+        position: absolute;
+        top: 0;
+        height:60px;
+        width:400px;
+        left:10px;
+    }
+    #sendBtn{
+        position: absolute;
+        top: 0;
+        left:430px;
+        height:60px;
+        width:60px;
+        width:60px;
+    }
+    #wall{
+        position: absolute;
+        height:200px;
+        width:475px;
+        left:10px;
+        top: 100px;
+        scroll:auto;
+        overflow:auto;
+        border-style:double;
+    }
+    #sublable{
+        position: absolute;
+        width:475px;
+        left:0;
+        top: 310px;
+    }
+    #followList{
+        position: absolute;
+        left:0;
+        top:0;
+        width:80px;
+        height:20px;
+    }
+    #followUser{
+        position: absolute;
+        left:130px;
+        height:20px;
+        top:10px;
+        width:100px;
+    }
+    #subBtn{
+        position: absolute;
+        left:260px;
+        top:10px;
+        width:80px;
+        height:20px;
+    }
+    #followMessage{
+        position: absolute;
+        height:100px;
+        width:475px;
+        left:10px;
+        top: 350px;
+        scroll:auto;
+        overflow:auto;
+        border-style:double;
+    }
+</style>
+<div id="log">
+    <text id="logText">UserName:</text>
+    <input id="name"type="text">
+    <button id="login">login</button>
+</div>
+<div id="main">
+    <div id="loglable">
+        Welcome <text id = "logname">null</text><br/>
+    </div>
+    <div id="sendlable">
+        <textarea id="message"></textarea>
+        <button id="sendBtn">send</button>
+    </div>
+    <div id = "wall" >
+
+    </div>
+    <div id="sublable">
+        <div>
+            <select id="followList"style="margin:10px">
+
+            </select>
+        </div>
+        <div>
+            <textarea id="followUser"></textarea>
+        </div>
+        <div>
+            <button id="subBtn">subscribe</button>
+        </div>
+    </div>
+    <div id = "followMessage">
+
+    </div>
+</div>
+</body>
+</html>
